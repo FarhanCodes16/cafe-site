@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Staff Panel</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>Incoming Orders</h2>
+  <ul id="ordersList"></ul>
+  <audio id="ding" src="ding.mp3" preload="auto"></audio>
+
+  <script>
+    let lastCount = 0;
+
+    async function loadOrders() {
+      const res = await fetch('/orders');
+      const orders = await res.json();
+      const list = document.getElementById('ordersList');
+      list.innerHTML = '';
+
+      if (orders.length > lastCount) {
+        document.getElementById('ding').play();
+      }
+
+      orders.forEach((order, index) => {
+        const li = document.createElement('li');
+        li.className = 'order-card';
+        if (order.served) li.classList.add('served');
+
+        const itemList = order.items.map(i => `${i.name} (x${i.quantity})`).join(', ');
+        const total = order.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+
+        li.innerHTML = `
+          <strong>Table ${order.table}</strong><br>
+          ${itemList}<br>
+          Total: ₹${total}
+          ${order.served ? ' ✅ Served' : ''}
+        `;
+
+        if (!order.served) {
+          const btn = document.createElement('button');
+          btn.textContent = 'Mark as Served';
+          btn.onclick = async () => {
+            await fetch('/serve', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ index })
+            });
+            loadOrders();
+          };
+          li.appendChild(btn);
+        }
+
+        list.appendChild(li);
+      });
+
+      lastCount = orders.length;
+    }
+
+    setInterval(loadOrders, 3000);
+    loadOrders();
+  </script>
+</body>
+</html>

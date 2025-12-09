@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Café Order</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>Place Your Order</h2>
+  <form id="orderForm">
+    <label>Table Number:
+      <input type="text" id="tableNumber" required>
+    </label><br><br>
+
+    <div>
+      <label><input type="checkbox" name="items" value="Tea"> Tea</label>
+      ₹20
+      <select name="Tea-qty">
+        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+      </select>
+    </div>
+    <div>
+      <label><input type="checkbox" name="items" value="Coffee"> Coffee</label>
+      ₹30
+      <select name="Coffee-qty">
+        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+      </select>
+    </div>
+    <div>
+      <label><input type="checkbox" name="items" value="Sandwich"> Sandwich</label>
+      ₹50
+      <select name="Sandwich-qty">
+        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+      </select>
+    </div>
+    <div>
+      <label><input type="checkbox" name="items" value="Burger"> Burger</label>
+      ₹80
+      <select name="Burger-qty">
+        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+      </select>
+    </div>
+    <div>
+      <label><input type="checkbox" name="items" value="Fries"> Fries</label>
+      ₹40
+      <select name="Fries-qty">
+        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+      </select>
+    </div>
+    <div>
+      <label><input type="checkbox" name="items" value="Cold Drink"> Cold Drink</label>
+      ₹25
+      <select name="Cold Drink-qty">
+        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+      </select>
+    </div>
+
+    <br><br>
+    <button type="submit">Place Order</button>
+  </form>
+
+  <script>
+    const prices = {
+      "Tea": 20,
+      "Coffee": 30,
+      "Sandwich": 50,
+      "Burger": 80,
+      "Fries": 40,
+      "Cold Drink": 25
+    };
+
+    document.getElementById('orderForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const tableNumber = document.getElementById('tableNumber').value;
+      const checkedItems = Array.from(document.querySelectorAll('input[name="items"]:checked'));
+
+      const items = checkedItems.map(item => {
+        const name = item.value;
+        const qty = parseInt(document.querySelector(`select[name="${name}-qty"]`).value);
+        const price = prices[name];
+        return { name, quantity: qty, price };
+      });
+
+      await fetch('/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ table: tableNumber, items })
+      });
+
+      alert("Order Placed!");
+      document.getElementById('orderForm').reset();
+    });
+  </script>
+</body>
+</html>
